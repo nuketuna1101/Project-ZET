@@ -1,10 +1,10 @@
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+public class BaseController : MonoBehaviour
 {
-    private Camera _Camera;
-
-    protected Rigidbody2D _rigidbody;
+    protected Rigidbody2D _Rigidbody;
+    protected AnimationHandler _AnimationHandler;
+    protected StatHandler _StatHandler;
 
     [SerializeField] private SpriteRenderer characterRenderer;
     [SerializeField] private Transform weaponPivot;
@@ -22,22 +22,37 @@ public class PlayerController : MonoBehaviour
     private Vector2 knockbackDirection = Vector2.zero;
     private float knockbackDuration = 0.0f;
 
-    protected void Awake()
+
+    [SerializeField] public WeaponHandler WeaponPrefab;
+    protected WeaponHandler weaponHandler;
+
+    protected bool isAttacking;
+    private float timeSinceLastAttack = float.MaxValue;
+
+
+    protected virtual void Awake()
     {
-        _rigidbody = GetComponent<Rigidbody2D>();
+        _Rigidbody = GetComponent<Rigidbody2D>();
+        _AnimationHandler = GetComponent<AnimationHandler>();
+        _StatHandler = GetComponent<StatHandler>();
+
+        if (WeaponPrefab != null)
+            weaponHandler = Instantiate(WeaponPrefab, weaponPivot);
+        else
+            weaponHandler = GetComponentInChildren<WeaponHandler>();
     }
 
-    protected void Start()
+    protected virtual void Start()
     {
-        _Camera = Camera.main;
     }
 
     protected virtual void Update()
     {
         HandleAction();
         Rotate(lookDirection);
+        HandleAttackDelay();
     }
-    protected void FixedUpdate()
+    protected virtual void FixedUpdate()
     {
         UpdateMovment(moveDirection);
         if (knockbackDuration > 0.0f)
@@ -46,36 +61,22 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    protected void HandleAction()
+    protected virtual void HandleAction()
     {
-        float horizontal = Input.GetAxisRaw("Horizontal");
-        float vertical = Input.GetAxisRaw("Vertical");
-        moveDirection = new Vector2(horizontal, vertical).normalized;
 
-        Vector2 mousePosition = Input.mousePosition;
-        Vector2 worldPos = _Camera.ScreenToWorldPoint(mousePosition);
-        lookDirection = (worldPos - (Vector2)transform.position);
-
-        if (lookDirection.magnitude < .9f)
-        {
-            lookDirection = Vector2.zero;
-        }
-        else
-        {
-            lookDirection = lookDirection.normalized;
-        }
     }
 
     private void UpdateMovment(Vector2 direction)
     {
-        direction = direction * 5;
+        direction = direction * _StatHandler.Speed;
         if (knockbackDuration > 0.0f)
         {
             direction *= 0.2f;
             direction += knockbackDirection;
         }
 
-        _rigidbody.linearVelocity = direction;
+        _Rigidbody.linearVelocity = direction;
+        _AnimationHandler.Move(direction);
     }
 
     private void Rotate(Vector2 direction)
@@ -89,11 +90,37 @@ public class PlayerController : MonoBehaviour
         {
             weaponPivot.rotation = Quaternion.Euler(0, 0, rotZ);
         }
+        weaponHandler?.Rotate(isLeft);
+
     }
 
     public void ApplyKnockback(Transform other, float power, float duration)
     {
         knockbackDuration = duration;
         knockbackDirection = -(other.position - transform.position).normalized * power;
+    }
+
+
+    private void HandleAttackDelay()
+    {
+        if (weaponHandler == null)
+            return;
+
+        if (timeSinceLastAttack <= weaponHandler.Delay)
+        {
+            timeSinceLastAttack += Time.deltaTime;
+        }
+
+        if (isAttacking && timeSinceLastAttack > weaponHandler.Delay)
+        {
+            timeSinceLastAttack = 0;
+            Attack();
+        }
+    }
+
+    protected virtual void Attack()
+    {
+        if (lookDirection != Vector2.zero)
+            weaponHandler?.Attack();
     }
 }
