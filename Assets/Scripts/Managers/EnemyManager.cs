@@ -8,18 +8,15 @@ public class EnemyManager : MonoBehaviour
 {
     private Coroutine waveRoutine;
 
-    [SerializeField]
-    private List<GameObject> enemyPrefabs; // 생성할 적 프리팹 리스트
+    [SerializeField] private List<GameObject> enemyPrefabs;
 
-    [SerializeField]
-    private List<Rect> spawnAreas; // 적을 생성할 영역 리스트
+    [SerializeField] private List<Rect> spawnAreas;
 
-    [SerializeField]
-    private Color gizmoColor = new Color(1, 0, 0, 0.3f); // 기즈모 색상
+    [SerializeField] private Color gizmoColor = new Color(1, 0, 0, 0.3f);
 
-    private List<EnemyController> activeEnemies = new List<EnemyController>(); // 현재 활성화된 적들
+    private List<EnemyController> activeEnemies = new List<EnemyController>();
 
-    private bool enemySpawnComplite;
+    private bool isEnemySpawnCompleted;
 
     [SerializeField] private float timeBetweenSpawns = 0.2f;
     [SerializeField] private float timeBetweenWaves = 1f;
@@ -38,7 +35,7 @@ public class EnemyManager : MonoBehaviour
 
     private IEnumerator SpawnWave(int waveCount)
     {
-        enemySpawnComplite = false;
+        isEnemySpawnCompleted = false;
         yield return new WaitForSeconds(timeBetweenWaves);
         for (int i = 0; i < waveCount; i++)
         {
@@ -46,7 +43,7 @@ public class EnemyManager : MonoBehaviour
             SpawnRandomEnemy();
         }
 
-        enemySpawnComplite = true;
+        isEnemySpawnCompleted = true;
     }
 
     private void SpawnRandomEnemy()
@@ -57,26 +54,21 @@ public class EnemyManager : MonoBehaviour
             return;
         }
 
-        // 랜덤한 적 프리팹 선택
         GameObject randomPrefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Count)];
 
-        // 랜덤한 영역 선택
         Rect randomArea = spawnAreas[Random.Range(0, spawnAreas.Count)];
 
-        // Rect 영역 내부의 랜덤 위치 계산
         Vector2 randomPosition = new Vector2(
             Random.Range(randomArea.xMin, randomArea.xMax),
             Random.Range(randomArea.yMin, randomArea.yMax)
         );
 
-        // 적 생성 및 리스트에 추가
         GameObject spawnedEnemy = Instantiate(randomPrefab, new Vector3(randomPosition.x, randomPosition.y), Quaternion.identity);
         EnemyController enemyController = spawnedEnemy.GetComponent<EnemyController>();
 
         activeEnemies.Add(enemyController);
     }
 
-    // 기즈모를 그려 영역을 시각화 (선택된 경우에만 표시)
     private void OnDrawGizmosSelected()
     {
         if (spawnAreas == null) return;
@@ -90,11 +82,8 @@ public class EnemyManager : MonoBehaviour
         }
     }
 
-    private void Update()
+    public void RemoveEnemyOnDeath(EnemyController enemy)
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            StartWave(1);
-        }
+        activeEnemies.Remove(enemy);
     }
 }

@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 public class PlayerController : BaseController
 {
@@ -12,23 +14,28 @@ public class PlayerController : BaseController
 
     protected override void HandleAction()
     {
-        float horizontal = Input.GetAxisRaw("Horizontal");
-        float vertical = Input.GetAxisRaw("Vertical");
-        moveDirection = new Vector2(horizontal, vertical).normalized;
+    }
 
-        Vector2 mousePosition = Input.mousePosition;
-        Vector2 worldPos = _Camera.ScreenToWorldPoint(mousePosition);
-        lookDirection = (worldPos - (Vector2)transform.position);
+    void OnMove(InputValue inputValue)
+    {
+        moveDirection = inputValue.Get<Vector2>().normalized;
+    }
 
-        if (lookDirection.magnitude < 0.9f)
-        {
-            lookDirection = Vector2.zero;
-        }
-        else
-        {
-            lookDirection = lookDirection.normalized;
-        }
+    void OnLook(InputValue inputValue)
+    {
+        Vector2 inputWorldPos = _Camera.ScreenToWorldPoint(inputValue.Get<Vector2>());
+        lookDirection = inputWorldPos - (Vector2)transform.position;
+        lookDirection = (lookDirection.magnitude > 1.0f ? lookDirection.normalized : Vector2.zero);
+    }
 
-        isAttacking = Input.GetMouseButton(0);
+    void OnFire(InputValue inputValue)
+    {
+        if (EventSystem.current.IsPointerOverGameObject()) return;
+        isAttacking = inputValue.isPressed;
+    }
+
+    public override void Death()
+    {
+        base.Death();
     }
 }

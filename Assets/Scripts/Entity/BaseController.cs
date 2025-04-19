@@ -24,7 +24,7 @@ public class BaseController : MonoBehaviour
 
 
     [SerializeField] public WeaponHandler WeaponPrefab;
-    protected WeaponHandler weaponHandler;
+    protected WeaponHandler _WeaponHandler;
 
     protected bool isAttacking;
     private float timeSinceLastAttack = float.MaxValue;
@@ -37,9 +37,9 @@ public class BaseController : MonoBehaviour
         _StatHandler = GetComponent<StatHandler>();
 
         if (WeaponPrefab != null)
-            weaponHandler = Instantiate(WeaponPrefab, weaponPivot);
+            _WeaponHandler = Instantiate(WeaponPrefab, weaponPivot);
         else
-            weaponHandler = GetComponentInChildren<WeaponHandler>();
+            _WeaponHandler = GetComponentInChildren<WeaponHandler>();
     }
 
     protected virtual void Start()
@@ -68,19 +68,21 @@ public class BaseController : MonoBehaviour
 
     private void UpdateMovment(Vector2 direction)
     {
+        // 이동 업데이트 : speed 기반
         direction = direction * _StatHandler.Speed;
         if (knockbackDuration > 0.0f)
         {
             direction *= 0.2f;
             direction += knockbackDirection;
         }
-
+        // 속도 적용 및 애니메이션
         _Rigidbody.linearVelocity = direction;
         _AnimationHandler.Move(direction);
     }
 
     private void Rotate(Vector2 direction)
     {
+        // 스프라이트 회전 설정 기본: 오른쪽 바라보기
         float rotZ = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         bool isLeft = Mathf.Abs(rotZ) > 90f;
 
@@ -90,7 +92,7 @@ public class BaseController : MonoBehaviour
         {
             weaponPivot.rotation = Quaternion.Euler(0, 0, rotZ);
         }
-        weaponHandler?.Rotate(isLeft);
+        _WeaponHandler?.Rotate(isLeft);
 
     }
 
@@ -103,15 +105,15 @@ public class BaseController : MonoBehaviour
 
     private void HandleAttackDelay()
     {
-        if (weaponHandler == null)
+        if (_WeaponHandler == null)
             return;
 
-        if (timeSinceLastAttack <= weaponHandler.Delay)
+        if (timeSinceLastAttack <= _WeaponHandler.Delay)
         {
             timeSinceLastAttack += Time.deltaTime;
         }
 
-        if (isAttacking && timeSinceLastAttack > weaponHandler.Delay)
+        if (isAttacking && timeSinceLastAttack > _WeaponHandler.Delay)
         {
             timeSinceLastAttack = 0;
             Attack();
@@ -121,6 +123,25 @@ public class BaseController : MonoBehaviour
     protected virtual void Attack()
     {
         if (lookDirection != Vector2.zero)
-            weaponHandler?.Attack();
+            _WeaponHandler?.Attack();
+    }
+
+    public virtual void Death()
+    {
+        _Rigidbody.linearVelocity = Vector3.zero;
+
+        foreach (SpriteRenderer renderer in transform.GetComponentsInChildren<SpriteRenderer>())
+        {
+            Color color = renderer.color;
+            color.a = 0.3f;
+            renderer.color = color;
+        }
+
+        foreach (Behaviour component in transform.GetComponentsInChildren<Behaviour>())
+        {
+            component.enabled = false;
+        }
+
+        Destroy(gameObject, 2f);
     }
 }

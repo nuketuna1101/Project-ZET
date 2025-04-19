@@ -4,6 +4,9 @@ public class ProjectileController : MonoBehaviour
 {
     [SerializeField] private LayerMask levelCollisionLayer;
 
+    private Rigidbody2D _Rigidbody;
+    private SpriteRenderer _SpriteRenderer;
+
     private ProjectileWeaponHandler rangeWeaponHandler;
 
     private float currentDuration;
@@ -11,33 +14,26 @@ public class ProjectileController : MonoBehaviour
     private bool isReady;
     private Transform pivot;
 
-    private Rigidbody2D _rigidbody;
-    private SpriteRenderer spriteRenderer;
-
     public bool fxOnDestory = true;
 
     private void Awake()
     {
-        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
-        _rigidbody = GetComponent<Rigidbody2D>();
+        _SpriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        _Rigidbody = GetComponent<Rigidbody2D>();
         pivot = transform.GetChild(0);
     }
 
     private void Update()
     {
-        if (!isReady)
-        {
-            return;
-        }
+        if (!isReady) return;
 
         currentDuration += Time.deltaTime;
-
         if (currentDuration > rangeWeaponHandler.Duration)
         {
             DestroyProjectile(transform.position, false);
         }
 
-        _rigidbody.linearVelocity = direction * rangeWeaponHandler.Speed;
+        _Rigidbody.linearVelocity = direction * rangeWeaponHandler.Speed;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -52,7 +48,6 @@ public class ProjectileController : MonoBehaviour
         }
     }
 
-
     public void Init(Vector2 direction, ProjectileWeaponHandler weaponHandler)
     {
         rangeWeaponHandler = weaponHandler;
@@ -60,14 +55,9 @@ public class ProjectileController : MonoBehaviour
         this.direction = direction;
         currentDuration = 0;
         transform.localScale = Vector3.one * weaponHandler.BulletSize;
-
         transform.right = this.direction;
 
-        if (this.direction.x < 0)
-            pivot.localRotation = Quaternion.Euler(180, 0, 0);
-        else
-            pivot.localRotation = Quaternion.Euler(0, 0, 0);
-
+        pivot.localRotation = Quaternion.Euler(((this.direction.x < 0)? 180 : 0), 0, 0);
         isReady = true;
     }
 
