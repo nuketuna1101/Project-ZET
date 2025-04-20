@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEditor.PackageManager;
 using UnityEngine;
+using static UnityEditor.Progress;
 
 public class DataManager : BaseSingleton<DataManager>
 {
@@ -13,9 +14,15 @@ public class DataManager : BaseSingleton<DataManager>
     [Header("TestData")]
     [SerializeField] private TestSO _TestSO;
 
-    [Header("Enemy Image Sprites")]
+    [Header("Image Sprites")]
     [SerializeField] private Sprite[] EnemyImageSprites;
+    [SerializeField] private Sprite[] ItemImageSprites;
 
+    private Dictionary<string, Sprite> _enemySpriteDictionary = new Dictionary<string, Sprite>();
+    private Dictionary<int, Sprite> _itemSpriteDictionary = new Dictionary<int, Sprite>();
+
+
+    #region Initialize/Set/Reset Data Resources using CSVReader
 
     protected override void Awake()
     {
@@ -25,6 +32,10 @@ public class DataManager : BaseSingleton<DataManager>
         SetEnemyData();
         SetItemData();
         SetTestSO();
+        //
+        LoadSprites();
+        CacheEnemySprites();
+        CacheItemSprites();
     }
 
     private void ResetData()
@@ -33,7 +44,6 @@ public class DataManager : BaseSingleton<DataManager>
         _ItemDataSO.ResetList();
         _TestSO.ResetList();
     }
-
     private void SetTestSO()
     {
         var dataList = new List<Dictionary<string, object>>();
@@ -107,6 +117,16 @@ public class DataManager : BaseSingleton<DataManager>
         }
     }
 
+    private void LoadSprites()
+    {
+        EnemyImageSprites = Resources.LoadAll<Sprite>("Sprites/SpritesData");
+        Debug.Log($"[Sprite Loading] Loaded {EnemyImageSprites.Length} sprites from Resources/Sprites : " +
+            $"{(EnemyImageSprites == null ? "Failed" : "Success")}");
+    }
+    #endregion
+
+    #region Getter Functions
+
     public EnemyData GetEnemyData(int index)
     {
         return _EnemyDataSO.GetEnemyData(index);
@@ -122,8 +142,117 @@ public class DataManager : BaseSingleton<DataManager>
         return EnemyImageSprites[index];
     }
 
+    public Sprite GetEnemyImageSpriteById(string enemyId)
+    {
+        if (_enemySpriteDictionary.ContainsKey(enemyId))
+        {
+            return _enemySpriteDictionary[enemyId];
+        }
+        else
+        {
+            Debug.LogWarning($"Item sprite with ID {enemyId} not found in ItemImageSprites.");
+            return null;
+        }
+    }
+
+    public ItemData GetItemData(int itemID)
+    {
+        if (_ItemDataSO == null || _ItemDataSO.ItemDataList == null)
+        {
+            Debug.LogError("ItemDataSO is NULL");
+            return null;
+        }
+
+        foreach (var itemData in _ItemDataSO.ItemDataList)
+        {
+            if (itemData.ItemID == itemID)
+            {
+                return itemData;
+            }
+        }
+
+        Debug.LogWarning($"CANNOT FIND ItemData with ID {itemID}");
+        return null;
+    }
+
+    public string GetItemNameById(int itemID)
+    {
+        return GetItemData(itemID)?.Name;
+    }
+
+    public Sprite GetItemSprite(int itemID)
+    {
+        if (_itemSpriteDictionary.ContainsKey(itemID))
+        {
+            return _itemSpriteDictionary[itemID];
+        }
+        else
+        {
+            Debug.LogWarning($"Item sprite with ID {itemID} not found in ItemImageSprites.");
+            return null;
+        }
+    }
+    #endregion
+
+
+    private void CacheEnemySprites()
+    {
+        // 효율적 검색을 위한 딕셔너리 캐싱
+        if (EnemyImageSprites != null)
+        {
+            foreach (var sprite in EnemyImageSprites)
+            {
+                string itemID = sprite.name;
+                if (!string.IsNullOrEmpty(itemID))
+                {
+                    if (!_enemySpriteDictionary.ContainsKey(itemID))
+                    {
+                        _enemySpriteDictionary.Add(itemID, sprite);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Duplicate: {itemID} 이미지 중복");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning($"Sprite name '{sprite.name}' INVALID error");
+                }
+            }
+        }
+    }
+
+    private void CacheItemSprites()
+    {
+        // 효율적 검색을 위한 딕셔너리 캐싱
+        if (ItemImageSprites != null)
+        {
+            foreach (var sprite in ItemImageSprites)
+            {
+                if (int.TryParse(sprite.name, out int itemID))
+                {
+                    if (!_itemSpriteDictionary.ContainsKey(itemID))
+                    {
+                        _itemSpriteDictionary.Add(itemID, sprite);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Duplicate: {itemID} 이미지 중복");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning($"Sprite name '{sprite.name}' INVALID error");
+                }
+            }
+        }
+    }
+
+
+
     private int[] ConvertStringToIntArray(string dropItemString)
     {
+        // 쉼표(,) 기준 int[] 받기
         if (string.IsNullOrEmpty(dropItemString))
         {
             return new int[0];

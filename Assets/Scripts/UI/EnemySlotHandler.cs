@@ -9,6 +9,7 @@ public class EnemySlotHandler : MonoBehaviour
     private EnemyWikiUI _EnemyWikiUI;
     private EnemyData _EnemyData;
     private int index;
+    private string enemyId;
 
     public void Init(EnemyWikiUI _EnemyWikiUI, int index)
     {
@@ -16,6 +17,7 @@ public class EnemySlotHandler : MonoBehaviour
         this.index = index;
 
         _EnemyData = DataManager.Instance.GetEnemyData(index);
+        this.enemyId = _EnemyData.MonsterID;
 
         SetEnemySlotImage();
 
@@ -24,7 +26,10 @@ public class EnemySlotHandler : MonoBehaviour
 
     public void SetEnemySlotImage()
     {
-        imageEnemySlot.sprite = DataManager.Instance.GetEnemyImageSprite(index);
+        //imageEnemySlot.sprite = DataManager.Instance.GetEnemyImageSprite(index);
+
+        imageEnemySlot.sprite = DataManager.Instance.GetEnemyImageSpriteById(enemyId);
+
     }
 
     public void OnClickEnemySlot()

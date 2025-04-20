@@ -42,13 +42,20 @@ public class EnemyWikiUI : BaseUI
 
     public void OnClickEnemySlot(EnemyData _EnemyData, int index)
     {
-        imageSelectedEnemy.sprite = DataManager.Instance.GetEnemyImageSprite(index);
+        //imageSelectedEnemy.sprite = DataManager.Instance.GetEnemyImageSprite(index);
+        imageSelectedEnemy.sprite = DataManager.Instance.GetEnemyImageSpriteById(_EnemyData.MonsterID);
 
         textName.text = $"Name : {_EnemyData.Name}";
         textDescription.text = $"Description : {_EnemyData.Description}";
         textAttack.text = $"Attack : {_EnemyData.Attack}";
         textMaxHP.text = $"MaxHP : {_EnemyData.MaxHP}";
-        textDropItem.text = $"DropItem : {_EnemyData.DropItem}";
+
+        string dropItemString = "DropItem : ";
+        foreach(var itemId in _EnemyData.DropItem)
+        {
+            dropItemString += $"{DataManager.Instance.GetItemNameById(itemId)}, ";
+        }
+        textDropItem.text = dropItemString;
     }
 
 
