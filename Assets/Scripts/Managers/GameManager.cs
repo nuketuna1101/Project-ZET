@@ -21,7 +21,7 @@ public class GameManager : BaseSingleton<GameManager>
 
     public void StartGame()
     {
-        
+        enemyManager.StartWave(5);
     }
 
     public void GameOver()

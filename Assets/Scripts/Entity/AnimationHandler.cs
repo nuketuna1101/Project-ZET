@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class AnimationHandler : MonoBehaviour
@@ -5,6 +6,7 @@ public class AnimationHandler : MonoBehaviour
     [Header("Boolean Variables")]
     private static readonly int IsMoving = Animator.StringToHash("IsMoving");
     private static readonly int IsHit = Animator.StringToHash("IsHit");
+    private static readonly int IsKilled = Animator.StringToHash("IsKilled");
 
     protected Animator _Animator;
 
@@ -21,6 +23,11 @@ public class AnimationHandler : MonoBehaviour
     public void GetHit()
     {
         _Animator.SetBool(IsHit, true);
+    }
+
+    public void GetKilled()
+    {
+        _Animator.SetBool(IsKilled, true);
     }
 
     public void GetInvincibilityEnd()

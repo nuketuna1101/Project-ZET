@@ -21,7 +21,7 @@ public class GameUI : BaseUI
 
     public void OnClickWaveStartButton()
     {
-        //
+        GameManager.Instance.StartGame();
     }
 
     public void OnClickEnemyWikiButton()

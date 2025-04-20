@@ -1,0 +1,5 @@
+﻿MonsterID,Name,Description,Attack,AttackMul,MaxHP,MaxHPMul,AttackRange,AttackRangeMul,AttackSpeed,MoveSpeed,MinExp,MaxExp,DropItem
+string,string,string,int,float,int,float,int,float,float,float,int,int,int[]
+M0001,Zombie,꾸물이 좀비,10,0.2,100,0.1,1,0.5,1,1,10,20,10000
+M0002,Skeleton,움직이는 뼈다귀,10,0.2,100,0.1,1,0.5,1,1,10,20,10000
+M0003,Elite Orc,똑똑한 오크,10,0.2,110,0.2,1,0.5,1.05,1,11,22,10000

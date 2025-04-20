@@ -36,6 +36,13 @@ public class PlayerController : BaseController
 
     public override void Death()
     {
-        base.Death();
+        //base.Death();
+
+        _Rigidbody.linearVelocity = Vector3.zero;
+        _AnimationHandler.GetKilled();
+        foreach (Behaviour component in transform.GetComponentsInChildren<Behaviour>())
+        {
+            component.enabled = false;
+        }
     }
 }

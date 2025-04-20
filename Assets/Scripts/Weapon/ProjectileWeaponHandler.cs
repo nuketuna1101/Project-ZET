@@ -56,11 +56,6 @@ public class ProjectileWeaponHandler : WeaponHandler
         _ProjectileManager.ShootBullet(
             this,
             projectileSpawnPosition.position,
-            RotateVector2(_lookDirection, angle));
-    }
-
-    private static Vector2 RotateVector2(Vector2 v, float degree)
-    {
-        return Quaternion.Euler(0, 0, degree) * v;
+            Quaternion.Euler(0, 0, angle) * _lookDirection);
     }
 }
