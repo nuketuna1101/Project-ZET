@@ -1,5 +1,5 @@
 # ProjectZET
- Unity2D Topdown Miniproject
+ Unity2D Topdown Miniproject (2025-04-18 ~ 2025-04-20)
 
 # 과제 명세 주요 요구사항
 - 하드코딩 지양 (데이터 변수에 직접할당 X)
