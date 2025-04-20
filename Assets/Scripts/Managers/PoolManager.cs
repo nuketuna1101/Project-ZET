@@ -30,6 +30,8 @@ public class PoolManager : BaseSingleton<PoolManager>
                 GameObject obj;
                 obj = Instantiate(prefabs[i]);
                 obj.GetComponent<IPoolable>()?.Initialize(o => ReturnObject(i, o));
+                obj.SetActive(false);
+                pools[i].Enqueue(obj);
             }
         }
     }

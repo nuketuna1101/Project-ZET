@@ -63,9 +63,11 @@ public class EnemyManager : MonoBehaviour
             Random.Range(randomArea.yMin, randomArea.yMax)
         );
 
-        GameObject spawnedEnemy = Instantiate(randomPrefab, new Vector3(randomPosition.x, randomPosition.y), Quaternion.identity);
+        //GameObject spawnedEnemy = Instantiate(randomPrefab, new Vector3(randomPosition.x, randomPosition.y), Quaternion.identity);
+        GameObject spawnedEnemy = PoolManager.Instance.GetObject(0, new Vector3(randomPosition.x, randomPosition.y), Quaternion.identity);
         EnemyController enemyController = spawnedEnemy.GetComponent<EnemyController>();
         enemyController.Init(this, GameManager.Instance.player.transform);
+
         activeEnemies.Add(enemyController);
     }
 
